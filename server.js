@@ -12,7 +12,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 let daftarPeminjaman = [];
 
 const auth = new google.auth.GoogleAuth({
-  keyFile: 'credentials.json',
+  credentials: JSON.parse(process.env.CREDENTIALS_JSON || '{}'),
   scopes: ['https://www.googleapis.com/auth/calendar'],
 });
 
