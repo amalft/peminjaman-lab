@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Form Peminjaman Lab</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 30px; background: #eef2f5; }
+    .container { max-width: 500px; margin: auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    nav { text-align: center; margin-bottom: 20px; }
+    nav a { margin: 0 10px; color: #007bff; text-decoration: none; font-weight: bold; }
+    h2 { text-align: center; color: #333; }
+    input, select, button { width: 100%; padding: 10px; margin-top: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+    button { background: #007bff; color: white; font-weight: bold; cursor: pointer; margin-top: 15px; border: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <nav>
+      <a href="/">Form Ajukan</a> | 
+       
+      <a href="/kalender.html">Lihat Kalender</a>
+    </nav>
+    <h2>Form Ajukan Peminjaman Lab</h2>
+    <form id="peminjamanForm">
+      <input type="text" id="nama" placeholder="Nama Peminjam" required>
+      <input type="text" id="jabatan" placeholder="Jabatan (Guru/Siswa)" required>
+      <input type="text" id="kelas" placeholder="Kelas">
+      <input type="text" id="barang" placeholder="Barang yang Dipinjam" required>
+      <input type="text" id="mataPelajaran" placeholder="Mata Pelajaran">
+      <input type="text" id="tujuan" placeholder="Tujuan Peminjaman">
+      
+      <label style="margin-top:10px; display:block;">Tanggal Pemakaian:</label>
+      <input type="date" id="tanggal" required>
+      
+      <label style="margin-top:10px; display:block;">Jam Mulai:</label>
+      <input type="time" id="jamMulai" required>
+      
+      <label style="margin-top:10px; display:block;">Jam Selesai:</label>
+      <input type="time" id="jamSelesai" required>
+
+      <label style="margin-top:10px; display:block;">Bagian:</label>
+      <select id="bagian">
+        <option value="IKHWAN">IKHWAN</option>
+        <option value="AKHWAT">AKHWAT</option>
+      </select>
+
+      <button type="submit">Kirim Pengajuan</button>
+    </form>
+    <p id="responseMsg" style="text-align:center; font-weight:bold; margin-top:15px;"></p>
+  </div>
+
+  <script>
+    document.getElementById('peminjamanForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        nama: document.getElementById('nama').value,
+        jabatan: document.getElementById('jabatan').value,
+        kelas: document.getElementById('kelas').value,
+        barang: document.getElementById('barang').value,
+        mataPelajaran: document.getElementById('mataPelajaran').value,
+        tujuan: document.getElementById('tujuan').value,
+        tanggal: document.getElementById('tanggal').value,
+        jamMulai: document.getElementById('jamMulai').value,
+        jamSelesai: document.getElementById('jamSelesai').value,
+        bagian: document.getElementById('bagian').value
+      };
+
+      const res = await fetch('/api/peminjaman', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const msgElem = document.getElementById('responseMsg');
+      if (res.ok) {
+        msgElem.style.color = 'green';
+        msgElem.innerText = '✅ Pengajuan berhasil dikirim! Menunggu ACC Admin.';
+        document.getElementById('peminjamanForm').reset();
+      } else {
+        msgElem.style.color = 'red';
+        msgElem.innerText = '❌ Gagal mengirim pengajuan.';
+      }
+    });
+  </script>
+</body>
+</html>

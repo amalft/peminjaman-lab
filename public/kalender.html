@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Jadwal Kalender Peminjaman</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 30px; background: #eef2f5; text-align: center; }
+    nav { margin-bottom: 25px; }
+    nav a { margin: 0 10px; color: #007bff; text-decoration: none; font-weight: bold; }
+    .calendar-container { margin-bottom: 40px; }
+    iframe { width: 100%; max-width: 900px; height: 600px; border: none; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    h2 { color: #333; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="/">Form Ajukan</a> | 
+    <a href="/admin.html">Dashboard Admin</a> | 
+    <a href="/kalender.html">Lihat Kalender</a>
+  </nav>
+  
+  <div class="calendar-container">
+    <h2>Jadwal Peminjaman Lab (IKHWAN)</h2>
+    <!-- mode=DAY untuk tampilan per jam dalam sehari -->
+    <iframe src="https://calendar.google.com/calendar/embed?src=f183376d659fb8458ede0d231f42e35967df05a9fe412303233fad90496b65f5%40group.calendar.google.com&ctz=Asia%2FJakarta&mode=DAY"></iframe>
+  </div>
+
+  <div class="calendar-container">
+    <h2>Jadwal Peminjaman Lab (AKHWAT)</h2>
+    <!-- mode=DAY untuk tampilan per jam dalam sehari -->
+    <iframe src="https://calendar.google.com/calendar/embed?src=35888b0ee4802cf0347c2dc46d290dfa35b3360cbfd6b36e690958ed0331158f%40group.calendar.google.com&ctz=Asia%2FJakarta&mode=DAY"></iframe>
+  </div>
+</body>
+</html>
