@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Super Admin</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f6f9; margin: 20px; }
+    .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+    th { background-color: #343a40; color: white; }
+    .btn-acc { background: #28a745; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+    .btn-acc:hover { background: #218838; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Panel Persetujuan Admin Baru (Super Admin)</h2>
+    <p>Berikut daftar calon Admin yang menunggu persetujuan Anda:</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Nama</th>
+          <th>Email</th>
+          <th>Status</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody id="userTable">
+        <tr><td colspan="4">Memuat data...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    // Proteksi halaman: Pastikan hanya Super Admin yang bisa buka
+    const role = sessionStorage.getItem('role');
+    if (role !== 'SUPER_ADMIN') {
+      alert('Akses ditolak! Halaman ini khusus Super Admin.');
+      window.location.href = '/login.html';
+    }
+
+    async function loadPendingUsers() {
+      const res = await fetch('/api/superadmin/pending-users');
+      const users = await res.json();
+      const tbody = document.getElementById('userTable');
+      tbody.innerHTML = '';
+
+      if (users.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Tidak ada pendaftaran admin baru yang pending.</td></tr>';
+        return;
+      }
+
+      users.forEach(u => {
+        tbody.innerHTML += `
+          <tr>
+            <td>${u.nama}</td>
+            <td>${u.email}</td>
+            <td><b style="color: orange;">Pending</b></td>
+            <td>
+              <button class="btn-acc" onclick="approveUser('${u.id}')">ACC Admin</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    async function approveUser(id) {
+      if (!confirm('Apakah Anda yakin ingin menyetujui akun Admin ini?')) return;
+      const res = await fetch(`/api/superadmin/approve-user/${id}`, { method: 'POST' });
+      const result = await res.json();
+      alert(result.message);
+      loadPendingUsers();
+    }
+
+    loadPendingUsers();
+  </script>
+</body>
+</html>

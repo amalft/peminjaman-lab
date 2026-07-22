@@ -2,83 +2,88 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard Admin</title>
   <style>
     body { font-family: sans-serif; margin: 30px; background: #f4f6f9; }
     nav { text-align: center; margin-bottom: 20px; }
     nav a { margin: 0 10px; color: #007bff; text-decoration: none; font-weight: bold; }
+    .header-bar { display: flex; justify-content: space-between; align-items: center; }
     table { width: 100%; border-collapse: collapse; background: white; margin-top: 20px; }
     th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
     th { background: #343a40; color: white; }
     .btn-approve { background: #28a745; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-weight: bold; }
-    #adminContent { display: none; } /* Sembunyikan konten secara default */
+    .btn-logout { background: #dc3545; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-weight: bold; }
   </style>
 </head>
 <body>
-  <div id="adminContent">
-    <nav>
-      <a href="/">Form Ajukan</a> | 
-      <a href="/kalender.html">Lihat Kalender</a>
-    </nav>
+  <nav>
+    <a href="/">Form Ajukan</a> | 
+    <a href="/kalender.html">Lihat Kalender</a>
+  </nav>
+
+  <div class="header-bar">
     <h2>Halaman Persetujuan Admin (ACC)</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Peminjam</th>
-          <th>Barang</th>
-          <th>Waktu Pemakaian</th>
-          <th>Bagian</th>
-          <th>Status Admin</th>
-          <th>Aksi</th>
-        </tr>
-      </thead>
-      <tbody id="daftarPeminjaman"></tbody>
-    </table>
+    <button class="btn-logout" onclick="logout()">Logout</button>
   </div>
 
+  <table>
+    <thead>
+      <tr>
+        <th>Peminjam</th>
+        <th>Barang</th>
+        <th>Waktu Pemakaian</th>
+        <th>Bagian</th>
+        <th>Status Admin</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody id="daftarPeminjaman"></tbody>
+  </table>
+
   <script>
-    const PASSWORD_ADMIN = "admin123"; // Ganti password sesuai keinginanmu
-
-    function verifikasiAdmin() {
-      const inputPass = prompt("Masukkan Password Admin:");
-      if (inputPass === PASSWORD_ADMIN) {
-        document.getElementById('adminContent').style.display = 'block';
-        loadData();
-      } else {
-        alert("❌ Password salah! Anda tidak memiliki akses.");
-        window.location.href = "/"; // Lempar balik ke halaman utama
-      }
+    // 1. Proteksi Akses: Cek token login
+    const token = sessionStorage.getItem('adminToken');
+    if (!token) {
+      alert("❌ Anda harus login terlebih dahulu!");
+      window.location.href = "/login.html";
     }
 
+    // 2. Load Data Peminjaman
     async function loadData() {
-      const res = await fetch('/api/peminjaman');
-      const list = await res.json();
-      const tbody = document.getElementById('daftarPeminjaman');
-      tbody.innerHTML = '';
+      try {
+        const res = await fetch('/api/peminjaman');
+        const list = await res.json();
+        const tbody = document.getElementById('daftarPeminjaman');
+        tbody.innerHTML = '';
 
-      if (list.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Belum ada pengajuan peminjaman.</td></tr>';
-        return;
+        if (list.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Belum ada pengajuan peminjaman.</td></tr>';
+          return;
+        }
+
+        list.forEach(item => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${item.nama} (${item.jabatan})</td>
+            <td>${item.barang}</td>
+            <td>${item.tanggal} (${item.jamMulai} - ${item.jamSelesai})</td>
+            <td>${item.bagian}</td>
+            <td><strong>${item.statusAdmin}</strong></td>
+            <td>
+              ${item.statusAdmin === 'Pending' 
+                ? `<button class="btn-approve" onclick="approve('${item.id}')">ACC & Sync Calendar</button>` 
+                : '✅ Disetujui'}
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (error) {
+        console.error("Gagal memuat data:", error);
       }
-
-      list.forEach(item => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${item.nama} (${item.jabatan})</td>
-          <td>${item.barang}</td>
-          <td>${item.tanggal} (${item.jamMulai} - ${item.jamSelesai})</td>
-          <td>${item.bagian}</td>
-          <td><strong>${item.statusAdmin}</strong></td>
-          <td>
-            ${item.statusAdmin === 'Pending' 
-              ? `<button class="btn-approve" onclick="approve('${item.id}')">ACC & Sync Calendar</button>` 
-              : '✅ Disetujui'}
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
     }
 
+    // 3. Fungsi ACC Peminjaman
     async function approve(id) {
       const res = await fetch(`/api/peminjaman/approve/${id}`, { method: 'POST' });
       if (res.ok) {
@@ -89,8 +94,14 @@
       }
     }
 
-    // Jalankan verifikasi saat halaman dibuka
-    verifikasiAdmin();
+    // 4. Fungsi Logout
+    function logout() {
+      sessionStorage.clear();
+      window.location.href = "/login.html";
+    }
+
+    // Jalankan pemuatan data otomatis
+    loadData();
   </script>
 </body>
 </html>
