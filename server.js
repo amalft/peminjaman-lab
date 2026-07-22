@@ -73,5 +73,76 @@ app.post('/api/peminjaman/approve/:id', async (req, res) => {
   }
 });
 
+// Array sementara Penyimpan User (Bisa diganti Supabase nanti)
+let users = [
+  {
+    id: 'super-1',
+    nama: 'Super Admin',
+    email: 'superadmin@gmail.com', // Ganti email Super Admin kamu
+    password: 'superpassword123',   // Ganti password Super Admin kamu
+    role: 'SUPER_ADMIN',
+    isApproved: true
+  }
+];
+
+// 1. Endpoint Register
+app.post('/api/register', (req, res) => {
+  const { nama, email, password } = req.body;
+  if (users.find(u => u.email === email)) {
+    return res.status(400).json({ success: false, message: 'Email sudah terdaftar!' });
+  }
+
+  const newUser = {
+    id: Date.now().toString(),
+    nama,
+    email,
+    password,
+    role: 'ADMIN',
+    isApproved: false // Harus disetujui Super Admin dulu
+  };
+
+  users.push(newUser);
+  res.json({ success: true, message: 'Pendaftaran berhasil! Tunggu persetujuan Super Admin.' });
+});
+
+// 2. Endpoint Login
+app.post('/api/login', (req, res) => {
+  const { email, password } = req.body;
+  const user = users.find(u => u.email === email && u.password === password);
+
+  if (!user) {
+    return res.status(401).json({ success: false, message: 'Email atau password salah!' });
+  }
+
+  if (!user.isApproved) {
+    return res.status(403).json({ success: false, message: 'Akun kamu belum di-ACC oleh Super Admin!' });
+  }
+
+  res.json({ 
+    success: true, 
+    role: user.role, 
+    token: `token-${user.id}`,
+    message: 'Login berhasil!' 
+  });
+});
+
+// 3. Endpoint Ambil List Admin Pending (Khusus Super Admin)
+app.get('/api/superadmin/pending-users', (req, res) => {
+  const pending = users.filter(u => !u.isApproved);
+  res.json(pending);
+});
+
+// 4. Endpoint ACC Admin Baru (Khusus Super Admin)
+app.post('/api/superadmin/approve-user/:id', (req, res) => {
+  const user = users.find(u => u.id === req.params.id);
+  if (user) {
+    user.isApproved = true;
+    return res.json({ success: true, message: 'Admin berhasil disetujui!' });
+  }
+  res.status(404).json({ success: false, message: 'User tidak ditemukan' });
+});
+app.get('/superadmin.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'superadmin.html'));
+});
 const PORT = 3000;
 app.listen(PORT, () => console.log(`🚀 Server berjalan di http://localhost:${PORT}`));
